@@ -1,0 +1,82 @@
+#getting the list of computer and groups from the file
+
+$LogTime = Get-Date -Format "MM-dd-yyyy_hh-mm-ss"
+$LogFile = 'E:\Laxman\shalesh\'+"LOG_"+$LogTime+"com_grp_mem.csv"
+$LogFile1 = 'E:\Laxman\shalesh\'+"LOG_"+$LogTime+"Group_backup.csv"
+
+$list= Import-Csv E:\Laxman\shalesh\add_group_com1.csv
+$output=@()
+$dump=@()
+
+
+#dumping all the computer that are member of the group for backup
+
+foreach ( $i in $list)
+
+
+{
+
+$grp=$null
+$grpmem=$null
+$c=$null
+$cdn=$null
+$cname=$null
+$mem=$null
+
+
+
+$grp=Get-ADGroup -Identity "$i.GroupName" -Properties * -Server stdvnaa.d60.intra
+$grpmem=$gr.member
+
+$c=Get-ADComputer -Identity $i.computername -Properties * 
+$cdn=$c.DistinguishedName
+$cname=$c.Name
+$mem=$c.MemberOf
+
+  if ($c -like $null) 
+    {
+    
+    $status = "Not Found"
+    Write-Host $status
+    } 
+    else
+
+    {
+    write-host "value of C" $c
+    $status = "found"
+    write-host "" $status
+    }
+
+    
+
+$obj = New-Object psobject
+$obj | Add-Member -MemberType NoteProperty -Name "computer-searched" $i.ComputerName
+$obj | Add-Member -MemberType NoteProperty -Name "computername" $cname
+$obj | Add-Member -MemberType NoteProperty -Name "Computer_statu" $search
+$obj | Add-Member -MemberType NoteProperty -Name "memberoff" ($mem -join ';')
+
+
+$obj1 = New-Object psobject
+$obj1 | Add-Member -MemberType NoteProperty -Name "Group from list" $i.GroupName
+$obj1 | Add-Member -MemberType NoteProperty -Name "memberof_group" ($grpmem -join ';')
+
+
+
+$output += $obj
+$dump += $obj1
+
+
+
+#Add-ADGroupMember -Identity $i.GroupName -Members $cdn
+
+}
+
+$output | Export-Csv $LogFile -NoTypeInformation
+$dump | Export-Csv $LogFile1 -NoTypeInformation
+
+ 
+
+
+
+
+
